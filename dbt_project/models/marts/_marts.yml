@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: fct_accidents
+    description: "Table de faits enrichie : 1 ligne = 1 accident (avec météo & gravité)."
+    columns:
+      - name: accident_id
+        description: "Identifiant unique."
+        tests: [not_null, unique]
+      - name: accident_date
+        tests: [not_null]
+      - name: lat
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "between 41 and 51.5"
+      - name: lon
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "between -5.5 and 10"
+      - name: is_fatal
+        description: "Booléen : au moins un décès."
+
+  - name: agg_accidents_by_dep
+    description: "Agrégation département × année."
+    columns:
+      - name: dep
+        tests: [not_null]
+      - name: year
+        tests: [not_null]
+
+  - name: agg_temporal_patterns
+    description: "Patterns temporels (heatmap heure × jour de semaine)."

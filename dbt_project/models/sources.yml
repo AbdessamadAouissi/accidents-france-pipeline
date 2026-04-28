@@ -1,0 +1,41 @@
+version: 2
+
+sources:
+  - name: staging_raw
+    description: "Données chargées depuis les Parquet processed/ par le loader Python."
+    schema: staging
+    tables:
+      - name: accidents
+        description: "Caractéristiques d'accidents nettoyées (1 ligne = 1 accident)."
+        columns:
+          - name: accident_id
+            description: "Identifiant unique de l'accident (Num_Acc ONISR)."
+            tests:
+              - not_null
+              - unique
+          - name: date
+            description: "Date de l'accident."
+          - name: lat
+            description: "Latitude WGS84."
+          - name: lon
+            description: "Longitude WGS84."
+          - name: dep
+            description: "Code département (zfill 2)."
+
+      - name: usagers
+        description: "Personnes impliquées (1 ligne = 1 usager)."
+        columns:
+          - name: accident_id
+            tests: [not_null]
+
+      - name: severity
+        description: "Agrégation gravité par accident."
+        columns:
+          - name: accident_id
+            tests: [not_null, unique]
+
+      - name: meteo
+        description: "Météo journalière par département (Open-Meteo)."
+
+      - name: population
+        description: "Population INSEE par département."

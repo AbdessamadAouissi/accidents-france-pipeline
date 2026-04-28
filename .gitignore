@@ -1,0 +1,85 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# Data (versioned via DVC)
+data/raw/*
+data/processed/*
+data/warehouse/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/warehouse/.gitkeep
+*.duckdb
+*.duckdb.wal
+*.parquet
+*.csv
+!tests/fixtures/*.csv
+
+# DVC
+/data/.gitignore
+.dvc/cache
+.dvc/tmp
+.dvc/config.local
+
+# dbt
+dbt_project/target/
+dbt_project/dbt_packages/
+dbt_project/logs/
+dbt_project/.user.yml
+profiles.yml
+!dbt_project/profiles.yml  # safe à committer : pas de secrets, chemin DuckDB local
+
+# Airflow
+airflow/logs/
+airflow/airflow.db
+airflow/airflow.cfg
+airflow/webserver_config.py
+airflow/standalone_admin_password.txt
+
+# Great Expectations
+great_expectations/uncommitted/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Claude Code (config locale)
+.claude/
+
+# Docker
+.docker/
+
+# ML artefacts
+models/*.pkl
+models/*.joblib
+mlruns/
+
+# Logs
+*.log
+logs/
