@@ -58,6 +58,11 @@ Plus de 3 200 personnes meurent chaque année sur les routes françaises. Ce pro
 
 ## 🏗️ Architecture
 
+[![Architecture du pipeline](docs/architecture.svg)](docs/architecture.svg)
+
+<details>
+<summary>📜 Version ASCII (cliquer pour développer)</summary>
+
 ```
 ┌──────────────────┐    ┌────────────────┐    ┌──────────────────┐
 │  data.gouv.fr    │    │  EXTRACT       │    │  TRANSFORM       │
@@ -79,6 +84,8 @@ Plus de 3 200 personnes meurent chaque année sur les routes françaises. Ce pro
 
    Airflow (DAG)  ·  GitHub Actions (CI)  ·  Docker  ·  Great Expectations
 ```
+
+</details>
 
 ---
 
