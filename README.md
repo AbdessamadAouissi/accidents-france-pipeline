@@ -1,48 +1,58 @@
 # 🚦 Accidents de la route en France — Pipeline Data End-to-End
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![DuckDB](https://img.shields.io/badge/warehouse-DuckDB-yellow.svg)](https://duckdb.org/)
-[![dbt](https://img.shields.io/badge/transform-dbt--duckdb-orange.svg)](https://www.getdbt.com/)
-[![FastAPI](https://img.shields.io/badge/API-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Streamlit](https://img.shields.io/badge/dashboard-Streamlit-FF4B4B.svg)](https://streamlit.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![dbt](https://img.shields.io/badge/dbt-1.8-FF694B?logo=dbt&logoColor=white)](https://www.getdbt.com/)
+[![DuckDB](https://img.shields.io/badge/DuckDB-Warehouse-FFF000?logo=duckdb&logoColor=black)](https://duckdb.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-REST-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![Airflow](https://img.shields.io/badge/Airflow-Orchestration-017CEE?logo=apacheairflow&logoColor=white)](https://airflow.apache.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?logo=github-actions&logoColor=white)](.github/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-> Pipeline **data end-to-end** sur les accidents corporels en France : **221 044 accidents** (2021–2024), **1 056 hotspots** détectés en métropole, **classifieur de gravité** (RandomForest, AUC 0.72), API REST et dashboard interactif.
+[![Accidents](https://img.shields.io/badge/Accidents-221_044-d62828)]()
+[![Hotspots](https://img.shields.io/badge/Hotspots-1_056-f77f00)]()
+[![Tests](https://img.shields.io/badge/Tests-pytest_+_13_dbt-success)]()
+[![Models](https://img.shields.io/badge/dbt-7_models-FF694B)]()
+
+> Pipeline data **end-to-end** sur les accidents corporels de la route en France (2021-2024) : extraction depuis les sources ouvertes, modélisation via dbt-duckdb, ML géospatial (DBSCAN + RandomForest), API REST et dashboard interactif.
+
+**[📊 Aperçu du dashboard](#-aperçu-du-dashboard) · [🏗️ Architecture](#️-architecture) · [🚀 Démarrage](#-démarrage) · [📡 API](#-api--exemples)**
 
 ---
 
-## 🎯 Ce que fait le projet
+## 🎯 Vue d'ensemble
 
-1. **Extraction** dynamique depuis `data.gouv.fr` (ONISR), Open-Meteo (climat) et INSEE (population) — pas d'IDs hardcodés.
-2. **Nettoyage** & jointures spatio-temporelles (pandas + DuckDB).
-3. **Modélisation analytique** avec dbt (staging → intermediate → marts).
-4. **ML** : DBSCAN haversine pour les hotspots géographiques + RandomForest pour la gravité fatale.
-5. **API REST** FastAPI (4 routers) + **dashboard Streamlit** (5 pages interactives).
-6. **Orchestration** Airflow + **CI** GitHub Actions + conteneurisation Docker.
+Plus de 3 200 personnes meurent chaque année sur les routes françaises. Ce projet construit toute la chaîne data — de l'extraction brute jusqu'au dashboard interactif — pour identifier les zones à risque et prédire la gravité d'un accident selon les conditions du moment.
+
+- **Sources** : ONISR (BAAC) via API `data.gouv.fr` · Open-Meteo (climat 20 départements) · INSEE (population)
+- **Volume** : 221 044 accidents corporels, 506 886 usagers, 28 122 lignes météo, 4 années (2021-2024)
+- **Sortie** : 1 056 zones à risque détectées, classifieur de gravité ROC-AUC 0.72, dashboard 5 pages
+
+## 📊 Aperçu du dashboard
+
+### 🗺️ Carte interactive — heatmap des accidents en France
+
+[![Carte interactive](docs/images/carte.png)](docs/images/carte.png)
+
+### 🎯 Hotspots — zones à risque détectées par DBSCAN
+
+[![Hotspots DBSCAN](docs/images/hotspots.png)](docs/images/hotspots.png)
+
+### 📈 Tendances — saisonnalité horaire et mensuelle
+
+[![Tendances temporelles](docs/images/tendances.png)](docs/images/tendances.png)
 
 ---
 
-## 📊 Résultats sur 2021–2024
+## ✨ Points forts
 
-| Métrique | Valeur |
-|---|---:|
-| Accidents corporels | **221 044** |
-| Usagers impliqués | 506 886 |
-| Accidents mortels (`is_fatal`) | 12 798 |
-| Hotspots DBSCAN (métropole) | **1 056** |
-| Couverture météo | 20 départements × 4 ans (28 122 lignes) |
-
-**Top 5 hotspots** (DBSCAN, ε=300 m, min=10) :
-
-| Rang | Zone | Accidents | Mortels | Taux fatalité |
-|---:|---|---:|---:|---:|
-| 1 | **Paris centre** (48.86, 2.36) | 47 391 | 414 | 0.9 % |
-| 2 | **Lyon** (45.75, 4.85) | 4 189 | 61 | 1.5 % |
-| 3 | **Marseille** (43.31, 5.39) | 3 743 | 80 | 2.1 % |
-| 4 | **Angers** (47.47, −0.55) | 812 | 11 | 1.4 % |
-| 5 | **Reims** (49.25, 4.03) | 783 | 7 | 0.9 % |
-
-**Classifieur** `is_fatal` (RandomForest, 5-fold CV) : **F1-macro 0.426**, **ROC-AUC 0.720** — sur un problème très déséquilibré (5.8 % de positifs).
+- **Extraction résiliente** : découverte dynamique des ressources ONISR via l'API `data.gouv.fr` (parse les URLs stables, pas les titres qui changent à chaque release du dataset).
+- **Multi-millésimes robustes** : gestion automatique des changements de schéma (`Num_Acc` → `Accident_Id` en 2022, encodages variables, coordonnées en virgule décimale).
+- **Warehouse local zéro-infra** : DuckDB + dbt-duckdb pour prototyper un mini-data-warehouse sans serveur, ni cloud, ni coût.
+- **ML géospatial** : DBSCAN haversine pour clustering des accidents à 300 m près, avec filtre métropole pour exclure les DOM-TOM.
+- **Classification déséquilibrée** : RandomForest avec `class_weight='balanced'` + `StratifiedKFold` sur problème à 5,8 % de positifs.
+- **Production-ready** : tests pytest + 13 tests dbt + Great Expectations + CI GitHub Actions + Docker Compose + pre-commit (ruff, black, mypy).
 
 ---
 
@@ -79,7 +89,7 @@
 | **Langages** | Python 3.11, SQL |
 | **Extraction** | `requests`, `httpx`, `pandas` |
 | **Stockage** | DuckDB, Parquet |
-| **Transformations** | `dbt-duckdb` (staging / intermediate / marts) |
+| **Transformations** | dbt-duckdb (staging / intermediate / marts) |
 | **Qualité** | Great Expectations, `pytest` |
 | **ML** | scikit-learn (DBSCAN haversine, RandomForest, `StratifiedKFold`) |
 | **Géospatial** | Folium, GeoPandas, Shapely |
@@ -87,6 +97,19 @@
 | **Dashboard** | Streamlit + Plotly + Folium |
 | **Orchestration** | Apache Airflow |
 | **DevOps** | Docker, docker-compose, GitHub Actions, pre-commit, `ruff`, `black`, `mypy` |
+
+---
+
+## 📐 Sources de données traitées
+
+| Source | Description | Volume |
+|---|---|---:|
+| **ONISR — caractéristiques** | 1 ligne = 1 accident corporel | 221 044 |
+| **ONISR — lieux** | Description du lieu (route, intersection) | 252 928 |
+| **ONISR — véhicules** | Véhicules impliqués | 378 071 |
+| **ONISR — usagers** | Personnes impliquées (gravité, équipement) | 506 886 |
+| **Open-Meteo** | Climat journalier (20 deps × 4 ans) | 28 122 |
+| **INSEE** | Population communale | 39 201 |
 
 ---
 
@@ -99,7 +122,7 @@
 ### Installation
 
 ```bash
-git clone https://github.com/<votre-user>/accidents-france-pipeline.git
+git clone https://github.com/AbdessamadAouissi/accidents-france-pipeline.git
 cd accidents-france-pipeline
 
 python -m venv .venv
@@ -115,13 +138,16 @@ cp .env.example .env
 # 1. Extraction (ONISR + Open-Meteo + INSEE)
 python -m src.extract.run_all
 
-# 2. Chargement DuckDB
+# 2. Nettoyage + agrégations
+python -m src.transform.run
+
+# 3. Chargement DuckDB
 python -m src.load.duckdb_loader
 
-# 3. Transformations dbt (7 modèles)
+# 4. Transformations dbt (7 modèles)
 cd dbt_project && dbt run --profiles-dir . && cd ..
 
-# 4. Entraînement ML (DBSCAN + RandomForest)
+# 5. Entraînement ML (DBSCAN + RandomForest)
 python -m src.ml.train_all
 ```
 
@@ -173,6 +199,8 @@ docker-compose up -d
 │   ├── processed/      # tables nettoyées + ml/hotspots_summary.parquet
 │   └── warehouse/      # accidents.duckdb
 ├── models/             # severity_rf.joblib (pickle scikit-learn)
+├── docs/
+│   └── images/         # screenshots dashboard
 └── docker-compose.yml  # API + dashboard + Airflow
 ```
 
@@ -196,16 +224,39 @@ docker-compose up -d
 
 - **Filtre métropole** d'abord (bbox lat 41–51.5, lon −5.5 à 10) — exclut DOM-TOM.
 - DBSCAN en métrique haversine, ε = 300 m, min_samples = 10.
-- 847 clusters trouvés sur 157 561 points (91 993 marqués bruit).
+- **1 056 clusters trouvés** sur 157 561 points.
 
 ### 2. Classifieur de gravité — RandomForest
 
-- **Cible** : `is_fatal` (≥ 1 décès), 5.7 % de positifs.
+- **Cible** : `is_fatal` (≥ 1 décès), 5,8 % de positifs.
 - **Features de base** (toujours dispo) : `hour`, `month`, `day_of_week`, `light_condition`, `weather_condition`, `time_of_day`.
 - **Features optionnelles** (depuis dbt) : `temp_max`, `precipitation`, `wind_max`, `weather_category`.
 - Pipeline sklearn : `SimpleImputer` + `StandardScaler` (num) / `OneHotEncoder` (cat) + `RandomForest(n=300, max_depth=12, class_weight='balanced')`.
-- Sélection automatique des features non-vides (`prepare()` skip les colonnes 100 % NaN).
-- Évaluation : `StratifiedKFold(5)`, **F1-macro 0.449 ± 0.004**, **ROC-AUC 0.692**.
+- Évaluation : `StratifiedKFold(5)`, **F1-macro 0.426 ± 0.004**, **ROC-AUC 0.720**.
+
+---
+
+## 📊 Résultats
+
+### KPIs globaux 2021-2024
+
+| Métrique | Valeur |
+|---|---:|
+| Accidents corporels | **221 044** |
+| Tués | 13 599 |
+| Blessés hospitalisés | 76 750 |
+| Blessés légers | 201 026 |
+| Accidents mortels (`is_fatal`) | 12 798 |
+
+### Top 5 hotspots (DBSCAN, ε=300 m, min=10)
+
+| Rang | Zone | Accidents | Mortels | Taux fatalité |
+|---:|---|---:|---:|---:|
+| 1 | **Paris centre** (48.86, 2.36) | 47 391 | 414 | 0.9 % |
+| 2 | **Lyon** (45.75, 4.85) | 4 189 | 61 | 1.5 % |
+| 3 | **Marseille** (43.31, 5.39) | 3 743 | 80 | 2.1 % |
+| 4 | **Angers** (47.47, −0.55) | 812 | 11 | 1.4 % |
+| 5 | **Reims** (49.25, 4.03) | 783 | 7 | 0.9 % |
 
 ---
 
@@ -214,7 +265,7 @@ docker-compose up -d
 ```bash
 # KPIs globaux
 curl http://localhost:8000/api/v1/kpis
-# → {"nb_accidents":166642,"nb_tues":10167,"nb_blesses_hosp":57624, ...}
+# → {"nb_accidents":221044,"nb_tues":13599,"nb_blesses_hosp":76750, ...}
 
 # Accidents (filtres : year, dep, severity, limit, offset)
 curl "http://localhost:8000/api/v1/accidents?limit=3"
@@ -229,28 +280,14 @@ curl -X POST http://localhost:8000/api/v1/predict \
        "light_condition":"nuit_sans_eclairage",
        "weather_condition":"pluie_forte",
        "time_of_day":"nuit"}'
-# → {"fatality_probability":0.6752,"risk_level":"élevé","model_version":"severity_rf_v1"}
+# → {"fatality_probability":0.6562,"risk_level":"élevé","model_version":"severity_rf_v1"}
 ```
 
 Doc Swagger auto-générée : `http://localhost:8000/docs`.
 
 ---
 
-## 📊 Dashboard Streamlit
-
-5 pages interactives :
-
-| Page | Contenu |
-|---|---|
-| 📊 **KPIs** | Filtres période / dép. / gravité, métriques clés, breakdown par département |
-| 🗺️ **Carte** | Heatmap Folium + clusters de marqueurs (filtrable) |
-| 📈 **Tendances** | Saisonnalité (heatmap heure × jour), corrélation météo ↔ gravité |
-| 🎯 **Hotspots** | Top zones DBSCAN sur Folium (cercles dimensionnés au taux de fatalité) |
-| 🤖 **Prédiction** | Formulaire interactif → appel modèle, jauge de risque |
-
----
-
-## 🧪 Qualité & tests
+## 🧪 Tests & qualité
 
 ```bash
 make test        # pytest -v
@@ -259,7 +296,24 @@ make ge          # Great Expectations checkpoints
 make dbt-test    # 13 tests dbt
 ```
 
-CI sur push/PR : `lint → test → ge → dbt-test` (voir `.github/workflows/`).
+CI sur push/PR : `lint → test → ge → dbt-test` (voir `.github/workflows/ci.yml`).
+
+---
+
+## 🎓 Ce que ce projet illustre
+
+| Compétence | Mise en pratique dans le projet |
+|---|---|
+| **Data engineering** | Pipeline end-to-end multi-sources, gestion des changements de schéma multi-millésimes, idempotence (cache local des CSV) |
+| **Modélisation analytique** | dbt en couches (staging → intermediate → marts), macro `generate_schema_name` pour éviter le préfixe `main_` |
+| **Warehouse OLAP** | DuckDB en mode in-process, vues d'alias entre staging Python et marts dbt pour résilience |
+| **Géospatial** | Bounding-box métropole, DBSCAN haversine, agrégation par centroïde, visualisation Folium (HeatMap + MarkerCluster) |
+| **Machine learning** | Pipeline sklearn complet avec imputation/scaling/encoding, classes déséquilibrées (`class_weight='balanced'`), validation stratifiée, sélection auto des features non-NaN |
+| **API & contrats** | FastAPI + Pydantic v2, validation des entrées, documentation Swagger auto-générée |
+| **Visualisation** | Streamlit multi-pages, cartes Folium interactives, graphes Plotly, formulaire de prédiction |
+| **Orchestration** | DAG Airflow `accidents_pipeline_daily` avec dépendances explicites |
+| **Qualité & CI/CD** | pytest, dbt tests, Great Expectations, GitHub Actions, pre-commit, lint (ruff/black/mypy) |
+| **DevOps** | Conteneurisation Docker Compose (API + dashboard + Airflow), variables d'environnement Pydantic Settings |
 
 ---
 
@@ -290,7 +344,7 @@ extract_insee  ─┘
 ## 🔭 Limites connues & suite
 
 - **Couverture météo** : 20 départements (zones les plus accidentogènes). À étendre aux 96 pour gagner sur les features ML.
-- **Classifieur** : baseline RF — tester XGBoost / LightGBM avec calibration des proba (Platt / isotonic).
+- **Classifieur** : baseline RF — tester XGBoost / LightGBM avec calibration des probas (Platt / isotonic).
 - **MLflow** : pas encore intégré (à venir pour le tracking d'expériences).
 - **Année 2025** : ONISR a un délai de ~12 mois ; le millésime 2025 sortira fin 2026. Le pattern d'extraction est dynamique — ajouter une année = changer `ONISR_YEARS` dans `.env`.
 
